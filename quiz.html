@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Битва пропорций — математический квиз</title>
+<style>
+:root{
+  --bg1:#2b0f5c; --bg2:#4b1d8f; --card:#ffffff; --ink:#1d1236;
+  --red:#e21b3c; --blue:#1368ce; --yellow:#d89e00; --green:#26890c;
+  --accent:#ffd400; --good:#2ecc71; --bad:#ff4d6d;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"Segoe UI",Roboto,Arial,sans-serif;color:#fff;
+  background:radial-gradient(circle at 20% 10%,var(--bg2),var(--bg1) 70%);
+  min-height:100vh;overflow-x:hidden;
+}
+#floaters{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.fl{position:absolute;bottom:-60px;font-weight:800;opacity:.12;animation:rise linear infinite}
+@keyframes rise{to{transform:translateY(-120vh) rotate(360deg)}}
+#app{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:16px;min-height:100vh;display:flex;flex-direction:column}
+.center{margin:auto;width:100%}
+h1{font-size:clamp(34px,8vw,64px);line-height:1.05;text-align:center;font-weight:900;text-shadow:0 4px 0 rgba(0,0,0,.25)}
+h1 span{color:var(--accent)}
+.sub{text-align:center;opacity:.85;margin:10px 0 22px;font-size:clamp(15px,3.5vw,19px)}
+.panel{background:rgba(255,255,255,.12);backdrop-filter:blur(6px);border-radius:20px;padding:20px;margin-bottom:16px;border:1px solid rgba(255,255,255,.18)}
+input[type=text]{width:100%;padding:14px 16px;border-radius:14px;border:3px solid transparent;font-size:20px;font-weight:700;text-align:center;color:var(--ink);outline:none}
+input[type=text]:focus{border-color:var(--accent)}
+.btn{display:inline-block;border:none;cursor:pointer;font-weight:800;font-size:18px;padding:14px 22px;border-radius:14px;color:var(--ink);background:var(--accent);box-shadow:0 5px 0 #b39500;transition:transform .08s,box-shadow .08s}
+.btn:hover{filter:brightness(1.06)}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #b39500}
+.btn.alt{background:#fff;box-shadow:0 5px 0 #aaa}
+.btn.big{width:100%;font-size:22px;padding:16px}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.modes .btn{font-size:16px;padding:12px 8px}
+.modes small{display:block;font-weight:600;opacity:.7;font-size:12px}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;font-size:14px}
+.how div{background:rgba(0,0,0,.18);border-radius:12px;padding:10px}
+.how b{display:block;margin-bottom:3px}
+table.lb{width:100%;border-collapse:collapse;font-size:15px}
+table.lb td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.12)}
+table.lb td:first-child{width:34px;font-weight:800}
+table.lb td:last-child{text-align:right;font-weight:800;color:var(--accent)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;font-weight:800}
+.chip{background:rgba(0,0,0,.28);border-radius:999px;padding:7px 14px;font-size:15px;white-space:nowrap}
+.chip.fire{background:linear-gradient(90deg,#ff7a00,#ff2d55)}
+.timerwrap{height:16px;background:rgba(0,0,0,.3);border-radius:99px;overflow:hidden;margin-bottom:6px}
+#bar{height:100%;width:100%;background:linear-gradient(90deg,#2ecc71,#ffd400);border-radius:99px;transition:background .3s}
+#bar.low{background:linear-gradient(90deg,#ff4d6d,#ff7a00)}
+.tnum{text-align:right;font-weight:800;font-size:14px;opacity:.9;margin-bottom:6px}
+.qcard{background:var(--card);color:var(--ink);border-radius:20px;padding:22px 18px;text-align:center;font-size:clamp(19px,4.4vw,28px);font-weight:800;margin-bottom:14px;box-shadow:0 8px 0 rgba(0,0,0,.18);animation:pop .35s}
+.qcard .tag{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:#efe8ff;color:#5a2db8;padding:4px 10px;border-radius:99px;margin-bottom:10px}
+.qcard svg{display:block;margin:12px auto 0;max-width:260px;width:100%;background:#f6f2ff;border-radius:12px}
+@keyframes pop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.answers.two{grid-template-columns:1fr 1fr}
+.ans{position:relative;border:none;cursor:pointer;color:#fff;font-weight:800;font-size:clamp(15px,3.6vw,21px);padding:18px 14px 18px 52px;border-radius:14px;text-align:left;min-height:84px;box-shadow:0 6px 0 rgba(0,0,0,.3);transition:transform .08s,box-shadow .08s,opacity .25s,filter .25s;animation:pop .35s backwards}
+.ans:nth-child(2){animation-delay:.05s}.ans:nth-child(3){animation-delay:.1s}.ans:nth-child(4){animation-delay:.15s}
+.ans:hover:not(:disabled){filter:brightness(1.12)}
+.ans:active:not(:disabled){transform:translateY(5px);box-shadow:0 1px 0 rgba(0,0,0,.3)}
+.ans .sym{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:28px}
+.ans .key{position:absolute;right:10px;top:6px;font-size:11px;opacity:.6}
+.c0{background:var(--red)}.c1{background:var(--blue)}.c2{background:var(--yellow)}.c3{background:var(--green)}
+.ans:disabled{cursor:default}
+.ans.right{outline:5px solid var(--good);filter:none;animation:pulse .5s}
+.ans.wrong{outline:5px solid #000;opacity:.55}
+.ans.dim{opacity:.35}
+.ans.gone{visibility:hidden}
+@keyframes pulse{50%{transform:scale(1.04)}}
+.numbox{display:flex;gap:10px;align-items:stretch}
+.numbox input{flex:1;font-size:26px;padding:14px}
+.numbox .btn{min-width:130px}
+.unit{display:flex;align-items:center;font-weight:800;opacity:.9}
+.power{display:flex;gap:8px;margin-top:14px;justify-content:center;flex-wrap:wrap}
+.pw{border:2px dashed rgba(255,255,255,.5);background:rgba(0,0,0,.2);color:#fff;padding:9px 14px;border-radius:12px;font-weight:700;cursor:pointer;font-size:14px}
+.pw:hover:not(:disabled){background:rgba(255,255,255,.2)}
+.pw:disabled{opacity:.35;cursor:not-allowed;text-decoration:line-through}
+.pw.on{background:var(--accent);color:var(--ink);border-style:solid}
+.hint{margin-top:10px;background:#fff7cc;color:#5a4a00;border-radius:12px;padding:10px 14px;font-weight:700;text-align:center}
+.fb{margin-top:14px;border-radius:16px;padding:16px;color:var(--ink);background:#fff;animation:pop .3s}
+.fb.ok{border-left:10px solid var(--good)}
+.fb.no{border-left:10px solid var(--bad)}
+.fb h3{font-size:22px;margin-bottom:6px}
+.fb p{line-height:1.45;font-size:16px;margin-bottom:12px}
+.fb .pts{font-weight:900;color:#1e9e55}
+.fb-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.score-big{font-size:clamp(46px,12vw,88px);font-weight:900;color:var(--accent);text-align:center;text-shadow:0 4px 0 rgba(0,0,0,.25)}
+.rank{text-align:center;font-size:clamp(20px,5vw,30px);font-weight:900;margin-bottom:4px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.stats div{background:rgba(0,0,0,.22);border-radius:14px;padding:12px;text-align:center}
+.stats b{display:block;font-size:26px}
+.stats span{font-size:12px;opacity:.8}
+.rev{background:rgba(0,0,0,.2);border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:14px;line-height:1.4}
+.rev em{color:var(--accent);font-style:normal;font-weight:800}
+#snd{position:fixed;right:12px;top:12px;z-index:5;width:44px;height:44px;border-radius:50%;border:none;background:rgba(0,0,0,.35);color:#fff;font-size:20px;cursor:pointer}
+#cv{position:fixed;inset:0;pointer-events:none;z-index:4}
+.floatpts{position:fixed;left:50%;top:30%;transform:translateX(-50%);font-size:clamp(34px,9vw,64px);font-weight:900;color:var(--accent);text-shadow:0 4px 0 rgba(0,0,0,.4);z-index:6;pointer-events:none;animation:floatup 1.1s forwards}
+@keyframes floatup{from{opacity:1;transform:translate(-50%,0) scale(.7)}30%{transform:translate(-50%,-10px) scale(1.15)}to{opacity:0;transform:translate(-50%,-90px) scale(1)}}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@media(max-width:560px){.answers{grid-template-columns:1fr}.ans{min-height:64px;padding:14px 12px 14px 48px}.stats b{font-size:20px}.numbox{flex-direction:column}}
+</style>
+</head>
+<body>
+<div id="floaters"></div>
+<canvas id="cv"></canvas>
+<button id="snd" title="Звук">🔊</button>
+<div id="app"></div>
+
+<script>
+/* ============ ВОПРОСЫ ============ */
+const QUESTIONS = [
+ {t:'choice',q:'Что из этого — ПРЯМАЯ пропорциональность?',a:['Чем больше рабочих, тем меньше времени на работу','Чем больше килограммов яблок, тем больше стоимость покупки','Чем выше скорость, тем меньше время в пути','Чем старше человек, тем выше его рост'],c:1,
+  e:'Масса и стоимость растут вместе в одно и то же число раз: y = kx, где k — цена 1 кг.'},
+ {t:'choice',q:'Что из этого — ОБРАТНАЯ пропорциональность?',a:['Количество тетрадей и их общая цена','Скорость машины и время в пути на одном и том же маршруте','Сторона квадрата и его периметр','Масса товара и его стоимость'],c:1,
+  e:'Путь постоянен: v · t = S. Если скорость вырастает в 2 раза, время уменьшается в 2 раза.'},
+ {t:'num',q:'3 кг яблок стоят 12 манат. Сколько манат стоят 5 кг?',ans:20,unit:'манат',h:'Найди цену 1 кг: 12 ÷ 3.',
+  e:'12 ÷ 3 = 4 маната за 1 кг, значит 5 кг стоят 4 · 5 = 20 манат. Это прямая пропорциональность.'},
+ {t:'num',q:'4 рабочих выполняют работу за 12 дней. За сколько дней выполнят её 6 таких же рабочих?',ans:8,unit:'дней',h:'Всего работы: 4 · 12 = 48 «рабочих-дней».',
+  e:'4 · 12 = 48, тогда 48 ÷ 6 = 8 дней. Больше рабочих — меньше дней: обратная пропорциональность.'},
+ {t:'num',q:'Автомобиль проезжает путь за 5 ч со скоростью 60 км/ч. За сколько часов он проедет этот путь со скоростью 100 км/ч?',ans:3,unit:'ч',h:'Сначала найди путь: S = 60 · 5.',
+  e:'S = 60 · 5 = 300 км, t = 300 ÷ 100 = 3 ч. Скорость и время — обратная пропорциональность.'},
+ {t:'choice',viz:'hyper',q:'График какой зависимости изображён?',a:['Прямая пропорциональность y = kx','Обратная пропорциональность y = k/x','Квадратичная y = x²','Линейная y = x + 5'],c:1,
+  e:'Кривая из двух ветвей — гипербола. Это график обратной пропорциональности y = k/x.'},
+ {t:'choice',viz:'line',q:'А это график какой зависимости?',a:['Прямая пропорциональность','Обратная пропорциональность','Квадратичная функция','Окружность'],c:0,
+  e:'Прямая линия, которая проходит через начало координат (0; 0), — график прямой пропорциональности y = kx.'},
+ {t:'choice',q:'В формуле y = 5x чему равен коэффициент пропорциональности k?',a:['5','1/5','0','x'],c:0,
+  e:'В формуле y = kx число перед x и есть k. Здесь k = 5.'},
+ {t:'choice',q:'Таблица: x = 1, 2, 3 и y = 4, 8, 12. Какая это зависимость?',a:['Прямая, y = 4x','Обратная, y = 4/x','Прямая, y = x + 3','Не пропорциональная'],c:0,
+  e:'Отношение y/x везде одинаково: 4/1 = 8/2 = 12/3 = 4. Значит, y = 4x.'},
+ {t:'choice',q:'Таблица: x = 2, 4, 8 и y = 12, 6, 3. Какая это зависимость?',a:['Прямая, y = 6x','Обратная, y = 24/x','Обратная, y = 12/x','Прямая, y = x + 10'],c:1,
+  e:'Произведение x · y постоянно: 2·12 = 4·6 = 8·3 = 24. Значит, y = 24/x.'},
+ {t:'tf',q:'Если в обратной пропорциональности x увеличить в 2 раза, то y тоже увеличится в 2 раза.',a:['Верно','Неверно'],c:1,
+  e:'Наоборот: при обратной пропорциональности y уменьшится в 2 раза, ведь произведение x · y остаётся постоянным.'},
+ {t:'num',q:'y обратно пропорционален x. При x = 2 значение y = 10. Найди y при x = 5.',ans:4,unit:'',h:'Найди k = x · y = 2 · 10.',
+  e:'k = 2 · 10 = 20, значит y = 20 / 5 = 4.'},
+ {t:'num',q:'Для 4 порций плова нужно 200 г риса. Сколько граммов риса нужно для 10 порций?',ans:500,unit:'г',h:'На одну порцию: 200 ÷ 4 = 50 г.',
+  e:'50 г на порцию, значит на 10 порций 50 · 10 = 500 г. Прямая пропорциональность.'},
+ {t:'num',q:'Две одинаковые трубы наполняют бассейн за 6 часов. За сколько часов наполнят его 3 такие же трубы?',ans:4,unit:'ч',h:'Всего работы: 2 · 6 = 12 «труб-часов».',
+  e:'2 · 6 = 12, тогда 12 ÷ 3 = 4 ч. Больше труб — меньше времени: обратная пропорциональность.'},
+ {t:'choice',q:'Как связаны сторона квадрата a и его площадь S?',a:['Прямая пропорциональность','Обратная пропорциональность','Ни прямая, ни обратная (S = a²)','Площадь не зависит от стороны'],c:2,
+  e:'Если сторону увеличить в 2 раза, площадь вырастет в 4 раза. Это не прямая и не обратная пропорциональность.'},
+ {t:'tf',q:'Рост человека и его возраст — это прямая пропорциональность.',a:['Верно','Неверно'],c:1,
+  e:'В 20 лет человек не вдвое выше, чем в 10. Рост и возраст — не пропорциональные величины.'},
+ {t:'num',q:'На карте 1 см соответствует 5 км. Сколько километров на местности соответствуют 7 см?',ans:35,unit:'км',h:'Умножай длину на карте на масштаб.',
+  e:'7 · 5 = 35 км. Расстояние на карте и на местности связаны прямой пропорциональностью.'},
+ {t:'num',q:'Найди x из пропорции: 3 / x = 6 / 10',ans:5,unit:'',h:'Основное свойство пропорции: 6 · x = 3 · 10.',
+  e:'6x = 30, значит x = 5.'},
+ {t:'num',q:'y = 36 / x. Чему равен y при x = 9?',ans:4,unit:'',h:'Просто подставь x = 9 в формулу.',
+  e:'y = 36 / 9 = 4. Здесь k = 36, это обратная пропорциональность.'},
+ {t:'choice',q:'Чем больше страниц читаешь в день, тем меньше дней нужно, чтобы дочитать книгу. Это…',a:['Прямая пропорциональность','Обратная пропорциональность','Нет зависимости','Квадратичная зависимость'],c:1,
+  e:'Всего страниц в книге постоянно: страниц в день · число дней = число страниц. Это обратная пропорциональность.'}
+];
+const SYM = ['▲','◆','●','■'];
+const TIME_CHOICE = 20, TIME_NUM = 40;
+
+/* ============ УТИЛИТЫ ============ */
+const $ = s => document.querySelector(s);
+const app = $('#app');
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const LB_KEY = 'prop_quiz_lb_v1';
+function loadLB(){ try{ return JSON.parse(localStorage.getItem(LB_KEY)) || []; }catch(e){ return []; } }
+function saveLB(entry){ try{ const l=loadLB(); l.push(entry); l.sort((a,b)=>b.score-a.score); localStorage.setItem(LB_KEY, JSON.stringify(l.slice(0,10))); }catch(e){} }
+function lbHTML(highlight){
+  const l = loadLB();
+  if(!l.length) return '<p style="opacity:.7;text-align:center">Пока пусто. Стань первым!</p>';
+  return '<table class="lb">' + l.map((r,i)=>`<tr><td>${['🥇','🥈','🥉'][i]||i+1}</td><td>${esc(r.name)}${r.id===highlight?' ⬅':''}</td><td>${r.score}</td></tr>`).join('') + '</table>';
+}
+
+/* floating math symbols */
+(function(){
+  const box = $('#floaters'), syms = ['∝','÷','×','=','k','x','y','½','%','1/x','y=kx','y=k/x'];
+  for(let i=0;i<22;i++){
+    const d = document.createElement('div'); d.className='fl';
+    d.textContent = syms[i%syms.length];
+    d.style.left = Math.random()*100+'%';
+    d.style.fontSize = (20+Math.random()*50)+'px';
+    d.style.animationDuration = (14+Math.random()*18)+'s';
+    d.style.animationDelay = (-Math.random()*25)+'s';
+    box.appendChild(d);
+  }
+})();
+
+/* ============ ЗВУК ============ */
+let actx = null, muted = false;
+function tone(freq, dur, type='sine', vol=.15, delay=0){
+  if(muted) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = freq;
+    const t0 = actx.currentTime + delay;
+    g.gain.setValueAtTime(vol, t0);
+    g.gain.exponentialRampToValueAtTime(.0001, t0+dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(t0); o.stop(t0+dur);
+  }catch(e){}
+}
+const sfx = {
+  good(){ tone(523,.12,'triangle'); tone(659,.12,'triangle',.15,.1); tone(784,.25,'triangle',.15,.2); },
+  bad(){ tone(220,.25,'sawtooth',.12); tone(165,.35,'sawtooth',.12,.2); },
+  click(){ tone(600,.05,'square',.06); },
+  power(){ tone(440,.08,'square',.08); tone(880,.15,'square',.08,.08); },
+  win(){ [523,659,784,1047].forEach((f,i)=>tone(f,.25,'triangle',.15,i*.15)); },
+  tick(){ tone(900,.04,'square',.05); }
+};
+$('#snd').onclick = () => { muted = !muted; $('#snd').textContent = muted ? '🔇' : '🔊'; };
+
+/* ============ КОНФЕТТИ ============ */
+const cv = $('#cv'), cx = cv.getContext('2d');
+let parts = [], anim = false;
+function resize(){ cv.width = innerWidth; cv.height = innerHeight; }
+addEventListener('resize', resize); resize();
+function confetti(n=120){
+  const cols = ['#ffd400','#e21b3c','#1368ce','#26890c','#ff7a00','#fff','#b46bff'];
+  for(let i=0;i<n;i++) parts.push({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.4,vx:(Math.random()-.5)*16,vy:-Math.random()*16-4,s:6+Math.random()*7,c:cols[i%cols.length],r:Math.random()*6,vr:(Math.random()-.5)*.4,life:140+Math.random()*60});
+  if(!anim){ anim = true; requestAnimationFrame(loop); }
+}
+function loop(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  parts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=.35; p.vx*=.99; p.r+=p.vr; p.life--;
+    cx.save(); cx.translate(p.x,p.y); cx.rotate(p.r); cx.fillStyle=p.c; cx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2); cx.restore(); });
+  parts = parts.filter(p=>p.life>0 && p.y<cv.height+40);
+  if(parts.length) requestAnimationFrame(loop); else { anim=false; cx.clearRect(0,0,cv.width,cv.height); }
+}
+
+/* ============ ГРАФИКИ (SVG) ============ */
+function vizSVG(kind){
+  const W=240,H=170,ox=30,oy=140;
+  let path='';
+  if(kind==='line'){
+    path = `M${ox} ${oy} L${ox+170} ${oy-120}`;
+  } else {
+    const pts=[]; for(let x=.5;x<=6;x+=.1){ pts.push(`${(ox+x*30).toFixed(1)} ${(oy-(24/x)*4.2*0.5*1).toFixed(1)}`); }
+    path = 'M'+pts.join(' L');
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="график">
+    <line x1="${ox}" y1="${oy}" x2="${W-8}" y2="${oy}" stroke="#555" stroke-width="2"/>
+    <line x1="${ox}" y1="${oy}" x2="${ox}" y2="8" stroke="#555" stroke-width="2"/>
+    <text x="${W-14}" y="${oy+16}" font-size="12" fill="#555">x</text>
+    <text x="${ox-14}" y="14" font-size="12" fill="#555">y</text>
+    <path d="${path}" fill="none" stroke="#e21b3c" stroke-width="4" stroke-linecap="round"/>
+  </svg>`;
+}
+
+/* ============ СОСТОЯНИЕ ИГРЫ ============ */
+let S = null, timerId = null;
+
+function startScreen(){
+  clearInterval(timerId);
+  const savedName = (()=>{ try{ return localStorage.getItem('prop_quiz_name')||''; }catch(e){ return ''; } })();
+  app.innerHTML = `
+  <div class="center">
+    <h1>Битва <span>пропорций</span> ⚔️</h1>
+    <p class="sub">Прямая и обратная пропорциональность · математический квиз</p>
+    <div class="panel">
+      <input id="nick" type="text" maxlength="16" placeholder="Твоё имя" value="${esc(savedName)}">
+      <div class="modes">
+        <button class="btn" data-n="10">Разминка<small>10 вопросов</small></button>
+        <button class="btn" data-n="15">Стандарт<small>15 вопросов</small></button>
+        <button class="btn" data-n="20">Марафон<small>20 вопросов</small></button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="how">
+        <div><b>⚡ Скорость = очки</b>Чем быстрее ответишь, тем больше баллов.</div>
+        <div><b>🔥 Серия</b>Правильные ответы подряд дают бонус к очкам.</div>
+        <div><b>🎯 Подсказка</b>Убирает 2 неверных ответа или даёт намёк к задаче.</div>
+        <div><b>⏱ +10 секунд</b>Добавляет время на раздумье.</div>
+        <div><b>✨ Очки ×2</b>Удваивает баллы за текущий вопрос.</div>
+        <div><b>⌨️ Клавиши</b>1–4 выбор ответа, Enter — дальше.</div>
+      </div>
+    </div>
+    <div class="panel"><h3 style="text-align:center;margin-bottom:8px">🏆 Таблица лидеров</h3>${lbHTML()}</div>
+  </div>`;
+  document.querySelectorAll('.modes .btn').forEach(b => b.onclick = () => {
+    const name = ($('#nick').value.trim() || 'Игрок').slice(0,16);
+    try{ localStorage.setItem('prop_quiz_name', name); }catch(e){}
+    sfx.click(); startGame(name, +b.dataset.n);
+  });
+}
+
+function startGame(name, n){
+  const picked = shuffle(QUESTIONS).slice(0,n).map(q => {
+    if(q.t==='num') return {...q};
+    if(q.t==='tf') return {...q, order:[0,1]};
+    const order = shuffle([0,1,2,3]);
+    return {...q, order};
+  });
+  S = {name, n, qs:picked, i:0, score:0, streak:0, best:0, correct:0, log:[], totalTime:0,
+       pw:{hint:true, time:true, dbl:true}, dblActive:false, locked:false, total:0, deadline:0};
+  showQuestion();
+}
+
+function showQuestion(){
+  const q = S.qs[S.i];
+  S.locked = false; S.dblActive = false; S.removed = [];
+  S.total = q.t==='num' ? TIME_NUM : TIME_CHOICE;
+  S.deadline = Date.now() + S.total*1000;
+  S.qStart = Date.now();
+
+  const tag = q.t==='num' ? 'Впиши ответ' : q.t==='tf' ? 'Верно или нет?' : 'Выбери ответ';
+  let body;
+  if(q.t==='num'){
+    body = `<div class="numbox"><input id="numin" type="text" inputmode="decimal" autocomplete="off" placeholder="Ответ">
+      ${q.unit?`<div class="unit">${esc(q.unit)}</div>`:''}
+      <button class="btn" id="okbtn">Ответить</button></div>`;
+  } else {
+    body = `<div class="answers ${q.t==='tf'?'two':''}">` + q.order.map((oi,k) =>
+      `<button class="ans c${q.t==='tf'?(k===0?1:0):k}" data-k="${k}"><span class="sym">${SYM[q.t==='tf'?(k===0?1:0):k]}</span>${esc(q.a[oi])}<span class="key">${k+1}</span></button>`
+    ).join('') + '</div>';
+  }
+
+  app.innerHTML = `
+  <div class="top">
+    <span class="chip">Вопрос ${S.i+1} / ${S.n}</span>
+    <span class="chip fire" id="stk" style="visibility:${S.streak>=2?'visible':'hidden'}">🔥 ${S.streak}</span>
+    <span class="chip">⭐ <span id="sc">${S.score}</span></span>
+  </div>
+  <div class="timerwrap"><div id="bar"></div></div>
+  <div class="tnum" id="tn"></div>
+  <div class="qcard"><div class="tag">${tag}</div><div>${esc(q.q)}</div>${q.viz?vizSVG(q.viz):''}</div>
+  <div id="body">${body}</div>
+  <div id="hintbox"></div>
+  <div class="power">
+    <button class="pw" id="pwHint" ${S.pw.hint?'':'disabled'}>🎯 Подсказка</button>
+    <button class="pw" id="pwTime" ${S.pw.time?'':'disabled'}>⏱ +10 сек</button>
+    <button class="pw ${S.dblActive?'on':''}" id="pwDbl" ${S.pw.dbl?'':'disabled'}>✨ Очки ×2</button>
+  </div>
+  <div id="fb"></div>`;
+
+  document.querySelectorAll('.ans').forEach(b => b.onclick = () => answerChoice(+b.dataset.k));
+  if(q.t==='num'){
+    const inp = $('#numin');
+    inp.focus();
+    inp.onkeydown = e => { if(e.key==='Enter') answerNum(); };
+    $('#okbtn').onclick = answerNum;
+  }
+  $('#pwHint').onclick = usePowerHint;
+  $('#pwTime').onclick = usePowerTime;
+  $('#pwDbl').onclick = usePowerDbl;
+
+  clearInterval(timerId);
+  let lastTick = -1;
+  timerId = setInterval(() => {
+    const left = Math.max(0,(S.deadline-Date.now())/1000);
+    const bar = $('#bar'); if(!bar) return;
+    bar.style.width = (left/S.total*100)+'%';
+    bar.classList.toggle('low', left<=5);
+    $('#tn').textContent = Math.ceil(left)+' сек';
+    if(left<=5 && Math.ceil(left)!==lastTick && left>0){ lastTick = Math.ceil(left); sfx.tick(); }
+    if(left<=0) finishQuestion(null, true);
+  }, 100);
+}
+
+function usePowerHint(){
+  if(S.locked || !S.pw.hint) return;
+  const q = S.qs[S.i];
+  if(q.t==='tf') return;
+  S.pw.hint = false; sfx.power();
+  $('#pwHint').disabled = true;
+  if(q.t==='num'){
+    $('#hintbox').innerHTML = `<div class="hint">💡 ${esc(q.h)}</div>`;
+  } else {
+    const wrong = q.order.map((oi,k)=>({oi,k})).filter(x => x.oi!==q.c);
+    shuffle(wrong).slice(0,2).forEach(x => { S.removed.push(x.k); const b=document.querySelector(`.ans[data-k="${x.k}"]`); b.classList.add('gone'); b.disabled = true; });
+  }
+}
+function usePowerTime(){
+  if(S.locked || !S.pw.time) return;
+  S.pw.time = false; sfx.power();
+  S.deadline += 10000; S.total += 10;
+  $('#pwTime').disabled = true;
+}
+function usePowerDbl(){
+  if(S.locked || !S.pw.dbl) return;
+  S.pw.dbl = false; S.dblActive = true; sfx.power();
+  $('#pwDbl').disabled = true; $('#pwDbl').classList.add('on');
+}
+
+function answerChoice(k){
+  if(S.locked) return;
+  finishQuestion(k, false);
+}
+function answerNum(){
+  if(S.locked) return;
+  const v = $('#numin').value.trim();
+  if(v==='') { $('#numin').classList.add('shake'); setTimeout(()=>$('#numin').classList.remove('shake'),400); return; }
+  finishQuestion(v, false);
+}
+
+function finishQuestion(given, timeout){
+  if(S.locked) return;
+  S.locked = true; clearInterval(timerId);
+  const q = S.qs[S.i];
+  const left = Math.max(0,(S.deadline-Date.now())/1000);
+  const spent = (Date.now()-S.qStart)/1000;
+  S.totalTime += Math.min(spent, S.total);
+  let ok = false, yourText = '—';
+
+  if(!timeout){
+    if(q.t==='num'){
+      const num = parseFloat(String(given).replace(',','.').replace(/\s/g,''));
+      ok = !isNaN(num) && Math.abs(num-q.ans) < 0.01;
+      yourText = String(given);
+    } else {
+      ok = q.order[given] === q.c;
+      yourText = q.a[q.order[given]];
+    }
+  }
+
+  let gained = 0;
+  if(ok){
+    S.streak++; S.best = Math.max(S.best,S.streak); S.correct++;
+    const speed = Math.round(500 + 500*Math.min(1,left/S.total));
+    const bonus = S.streak>=2 ? Math.min(S.streak-1,5)*100 : 0;
+    gained = (speed + bonus) * (S.dblActive?2:1);
+    S.score += gained;
+  } else {
+    S.streak = 0;
+  }
+
+  const correctText = q.t==='num' ? (q.ans + (q.unit?' '+q.unit:'')) : q.a[q.c];
+  S.log.push({q:q.q, ok, your:yourText, right:correctText, timeout});
+
+  document.querySelectorAll('.ans').forEach((b,k) => {
+    b.disabled = true;
+    const isRight = q.order && q.order[k]===q.c;
+    if(isRight) b.classList.add('right');
+    else if(!timeout && k===given) b.classList.add('wrong');
+    else b.classList.add('dim');
+  });
+  if(q.t==='num'){ const inp=$('#numin'); if(inp){ inp.disabled=true; inp.style.background = ok?'#c9f7dc':'#ffd0d8'; } const ob=$('#okbtn'); if(ob) ob.disabled=true; }
+  ['pwHint','pwTime','pwDbl'].forEach(id => { const b=$('#'+id); if(b) b.disabled = true; });
+
+  $('#sc').textContent = S.score;
+  const stk = $('#stk'); stk.textContent = '🔥 '+S.streak; stk.style.visibility = S.streak>=2?'visible':'hidden';
+
+  if(ok){
+    sfx.good(); if(S.streak>=3 && S.streak%3===0) confetti(60);
+    const f = document.createElement('div'); f.className='floatpts'; f.textContent = '+'+gained; document.body.appendChild(f); setTimeout(()=>f.remove(),1100);
+  } else { sfx.bad(); $('#app').classList.add('shake'); setTimeout(()=>$('#app').classList.remove('shake'),400); }
+
+  const last = S.i === S.n-1;
+  const title = ok ? ['Верно! 🎉','Отлично! 🔥','Точно в цель! 🎯','Так держать! 💪'][Math.floor(Math.random()*4)] : (timeout ? 'Время вышло ⏰' : 'Не совсем… 🤔');
+  $('#fb').innerHTML = `<div class="fb ${ok?'ok':'no'}">
+    <h3>${title}${ok?` <span class="pts">+${gained}</span>`:''}</h3>
+    ${ok?'':`<p><b>Правильный ответ:</b> ${esc(correctText)}</p>`}
+    <p>${esc(q.e)}</p>
+    <div class="fb-row"><span style="opacity:.7">${S.streak>=2?'Серия: '+S.streak+' 🔥':''}</span>
+    <button class="btn" id="next">${last?'Результаты 🏁':'Дальше ▶'}</button></div></div>`;
+  $('#next').onclick = nextQ;
+  $('#next').focus();
+  $('#fb').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function nextQ(){
+  sfx.click();
+  if(S.i < S.n-1){ S.i++; showQuestion(); window.scrollTo(0,0); }
+  else resultScreen();
+}
+
+function rankOf(p){
+  if(p<40) return ['🌱','Новичок-пропорционалист'];
+  if(p<60) return ['📘','Ученик Пифагора'];
+  if(p<80) return ['🧮','Мастер коэффициентов'];
+  if(p<95) return ['🚀','Гуру гипербол'];
+  return ['👑','Легенда пропорций'];
+}
+
+function resultScreen(){
+  clearInterval(timerId);
+  const pct = Math.round(S.correct/S.n*100);
+  const [ico, rname] = rankOf(pct);
+  const id = Date.now();
+  saveLB({id, name:S.name, score:S.score});
+  const avg = (S.totalTime/S.n).toFixed(1);
+  const mistakes = S.log.filter(x => !x.ok);
+  app.innerHTML = `
+  <div class="center">
+    <div class="rank">${ico} ${esc(rname)}</div>
+    <p class="sub" style="margin:0 0 4px">${esc(S.name)}, твой результат:</p>
+    <div class="score-big">${S.score}</div>
+    <div class="stats">
+      <div><b>${S.correct}/${S.n}</b><span>правильных (${pct}%)</span></div>
+      <div><b>${S.best}</b><span>лучшая серия 🔥</span></div>
+      <div><b>${avg} с</b><span>среднее время</span></div>
+    </div>
+    ${mistakes.length ? `<div class="panel"><h3 style="margin-bottom:10px">Работа над ошибками (${mistakes.length})</h3>` +
+      mistakes.map(m => `<div class="rev">${esc(m.q)}<br>Твой ответ: ${esc(m.your)} → правильно: <em>${esc(m.right)}</em></div>`).join('') + '</div>'
+      : '<div class="panel" style="text-align:center;font-size:20px;font-weight:800">Ни одной ошибки! Идеально! 💯</div>'}
+    <div class="panel"><h3 style="text-align:center;margin-bottom:8px">🏆 Таблица лидеров</h3>${lbHTML(id)}</div>
+    <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
+      <button class="btn big" id="again">Играть снова 🔄</button>
+      <button class="btn big alt" id="share">Поделиться 📋</button>
+    </div>
+  </div>`;
+  $('#again').onclick = () => { sfx.click(); startScreen(); };
+  $('#share').onclick = () => {
+    const text = `Я набрал(а) ${S.score} очков в «Битве пропорций» (${S.correct}/${S.n}) — ${rname}! Сможешь лучше? ${location.href}`;
+    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(
+      () => { $('#share').textContent = 'Скопировано ✓'; },
+      () => { prompt('Скопируй текст:', text); });
+  };
+  sfx.win();
+  if(pct>=60) { confetti(160); setTimeout(()=>confetti(100),600); }
+}
+
+/* клавиатура */
+addEventListener('keydown', e => {
+  if(!S || !S.qs || document.activeElement && document.activeElement.id==='numin') return;
+  if(!S.locked && ['1','2','3','4'].includes(e.key)){
+    const q = S.qs[S.i];
+    if(q.t==='num') return;
+    const k = +e.key-1;
+    if(k < q.order.length && !S.removed.includes(k)) answerChoice(k);
+  } else if(S.locked && e.key==='Enter'){
+    const nb = document.querySelector('#next'); if(nb) nb.click();
+  }
+});
+
+startScreen();
+</script>
+</body>
+</html>
